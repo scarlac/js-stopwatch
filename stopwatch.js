@@ -7,13 +7,14 @@
  * http://opensource.org/licenses/MIT
  */
 
-// * Stopwatch class {{{
-Stopwatch = function(listener, resolution) {
+// * Stopwatch class
+Stopwatch = function(listener, resolution, countUp) {
 	this.startTime = 0;
 	this.stopTime = 0;
 	this.totalElapsed = 0; // * elapsed number of ms in total
 	this.started = false;
 	this.listener = (listener != undefined ? listener : null); // * function to receive onTick events
+	this.countUp = typeof countUp !== 'undefined' ? countUp : true;
 	this.tickResolution = (resolution != undefined ? resolution : 500); // * how long between each tick in milliseconds
 	this.tickInterval = null;
 	
@@ -47,6 +48,19 @@ Stopwatch.prototype.reset = function() {
 	// * if watch is running, reset it to current time
 	this.startTime = new Date().getTime();
 	this.stopTime = this.startTime;
+	if (!this.countUp) {
+		this.totalElapsed = this.initialElapsed;
+	}
+	if (this.tickInterval != null) {
+		var delegate = function(that, method) {
+			return function() {
+				return method.call(that);
+			};
+		};
+		clearInterval(this.tickInterval);
+		this.tickInterval = setInterval(delegate(this, this.onTick),
+			this.tickResolution);
+	}
 }
 Stopwatch.prototype.restart = function() {
 	this.stop();
@@ -60,6 +74,10 @@ Stopwatch.prototype.getElapsed = function() {
 		elapsed = new Date().getTime() - this.startTime;
 	elapsed += this.totalElapsed;
 	
+	if (!this.countUp) {
+		elapsed = Math.max(2*this.initialElapsed - elapsed, 0);
+	}
+
 	var hours = parseInt(elapsed / this.onehour);
 	elapsed %= this.onehour;
 	var mins = parseInt(elapsed / this.onemin);
@@ -75,12 +93,25 @@ Stopwatch.prototype.getElapsed = function() {
 	};
 }
 Stopwatch.prototype.setElapsed = function(hours, mins, secs) {
-	this.reset();
+//	this.reset();
 	this.totalElapsed = 0;
+	this.startTime = new Date().getTime();
+	this.stopTime = this.startTime;
 	this.totalElapsed += hours * this.onehour;
 	this.totalElapsed += mins  * this.onemin;
-	this.totalElapsed += secs  * this.onesec;
+	this.totalElapsed += this.countUp ? secs  * this.onesec : (secs+1)*this.onesec-1;
 	this.totalElapsed = Math.max(this.totalElapsed, 0); // * No negative numbers
+	this.initialElapsed = this.totalElapsed;
+	if (this.tickInterval != null) {
+		var delegate = function(that, method) {
+			return function() {
+				return method.call(that);
+			};
+		};
+		clearInterval(this.tickInterval);
+		this.tickInterval = setInterval(delegate(this, this.onTick),
+			this.tickResolution);
+	}
 }
 Stopwatch.prototype.toString = function() {
 	var zpad = function(no, digits) {
@@ -101,4 +132,3 @@ Stopwatch.prototype.onTick = function() {
 		this.listener(this);
 	}
 }
-// }}}
