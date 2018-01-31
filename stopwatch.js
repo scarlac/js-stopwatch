@@ -17,7 +17,7 @@ Stopwatch = function(listener, resolution, countUp) {
 	this.countUp = typeof countUp !== 'undefined' ? countUp : true;
 	this.tickResolution = (resolution != undefined ? resolution : 500); // * how long between each tick in milliseconds
 	this.tickInterval = null;
-	
+
 	// * pretty static vars
 	this.onehour = 1000 * 60 * 60;
 	this.onemin  = 1000 * 60;
@@ -73,7 +73,7 @@ Stopwatch.prototype.getElapsed = function() {
 	if(this.started)
 		elapsed = new Date().getTime() - this.startTime;
 	elapsed += this.totalElapsed;
-	
+
 	if (!this.countUp) {
 		elapsed = Math.max(2*this.initialElapsed - elapsed, 0);
 	}
@@ -84,7 +84,7 @@ Stopwatch.prototype.getElapsed = function() {
 	elapsed %= this.onemin;
 	var secs = parseInt(elapsed / this.onesec);
 	var ms = elapsed % this.onesec;
-	
+
 	return {
 		hours: hours,
 		minutes: mins,
@@ -113,7 +113,7 @@ Stopwatch.prototype.setElapsed = function(hours, mins, secs) {
 			this.tickResolution);
 	}
 }
-Stopwatch.prototype.toString = function() {
+Stopwatch.prototype.toString = function(milliseconds = false) {
 	var zpad = function(no, digits) {
 		no = no.toString();
 		while(no.length < digits)
@@ -121,7 +121,7 @@ Stopwatch.prototype.toString = function() {
 		return no;
 	}
 	var e = this.getElapsed();
-	return zpad(e.hours,2) + ":" + zpad(e.minutes,2) + ":" + zpad(e.seconds,2);
+	return zpad(e.hours,2) + ":" + zpad(e.minutes,2) + ":" + zpad(e.seconds,2) + (milliseconds ? ':' + zpad(e.milliseconds, 3) : '');
 }
 Stopwatch.prototype.setListener = function(listener) {
 	this.listener = listener;
