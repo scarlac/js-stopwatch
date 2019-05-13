@@ -113,7 +113,8 @@ Stopwatch.prototype.setElapsed = function(hours, mins, secs) {
 			this.tickResolution);
 	}
 }
-Stopwatch.prototype.toString = function(milliseconds = false) {
+Stopwatch.prototype.toString = function(milliseconds) {
+	var milliseconds = milliseconds || false;
 	var zpad = function(no, digits) {
 		no = no.toString();
 		while(no.length < digits)
